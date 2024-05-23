@@ -1,0 +1,17 @@
+* Tuesday April 2, 2024
+- Upgrade to AAP2
+- fcqn used with all modules
+
+* Monday January 24, 2022
+- Fixed ansible-lint issues
+
+* Wednesday August 18, 2021
+- Added feature to add, modify and delete libvirt network
+- Updated the documentation
+- Added sample playbooks to the tests folder
+- bumped up the version to v0.2
+
+* Friday April 10, 2021
+- Initial release of libvirt_setup role v0.1
+- Added README.md
+- Added changelog.txt

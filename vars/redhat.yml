@@ -1,0 +1,29 @@
+virtualization_packages:
+  python2:
+    - python-lxml
+    - python-netaddr
+    - libvirt-python
+    - libvirt-devel
+    - libvirt
+    - libvirt-client
+    - qemu-kvm
+    - qemu-img
+    - virt-install
+    - virt-manager
+    - virt-viewer
+    - libguestfs-tools
+    - NetworkManager-glib
+  python3:
+    - python3-lxml
+    - python3-netaddr
+    - python3-libvirt
+    - libvirt-devel
+    - libvirt
+    - libvirt-client
+    - qemu-kvm
+    - qemu-img
+    - virt-install
+    - virt-manager
+    - virt-viewer
+    - libguestfs-tools
+    - NetworkManager-libnm

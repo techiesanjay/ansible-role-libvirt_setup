@@ -1,0 +1,27 @@
+---
+# defaults file for libvirt_setup
+
+
+# Additional libvirt storage pool and network configuration and settings can be defined as in the example below
+ when calling the libvirt_setup role
+
+# libvirt:
+#   storage:
+#     pool_name: test-store
+#     pool_path: /var/lib/libvirt/images/test
+#   network:
+#     network_dhcp: true
+#     network_name: test-net
+#     network_gateway: 192.168.5.1
+#     network_bridge: br0-test
+#     network_mask: 255.255.255.0
+#     network_dhcp_start: 192.168.5.50                                # DHCP start range to be assigned to the VMs
+#     network_dhcp_end: 192.168.5.254
+
+
+# required for running tagged tasks delete_network in the libvirt_infra role
+network_to_delete: dummy
+
+# required for running tagged tasks update_network in the libvirt_infra role
+network_to_update: dummy
+xml: "<host mac='fc:c2:34:00:6c:3a' name='vm' ip='192.168.122.30'/>"

@@ -1,0 +1,20 @@
+- name: Include OS specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family|lower }}.yml"
+ 
+- name: Installing libvirt/kvm packages for Python2
+  ansible.builtin.yum:
+    name: "{{ virtualization_packages.python2 }}"
+    state: present
+  when: ansible_facts.python.version.major == 2
+
+- name: Installing libvirt/kvm packages for Python3
+  ansible.builtin.yum:
+    name: "{{ virtualization_packages.python3 }}"
+    state: present
+  when: ansible_facts.python.version.major == 3
+
+- name: Start libvirt service
+  ansible.builtin.service:
+    name: libvirtd
+    state: started
+    enabled: true

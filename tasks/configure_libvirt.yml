@@ -1,0 +1,207 @@
+
+# NOTE: The first libvirt network is automatically provisioned with the hypervisor. Subsequent networks need to be user provisioned
+- name: Start default libvirt network
+  community.libvirt.virt_net:
+    command: start
+    name: "default"
+    state: active
+
+- name: Make default libvirt network autostart
+  community.libvirt.virt_net:
+    name: "default"
+    autostart: true
+
+# NOTE: This starts the default storage pool
+- name: Create the default storage pool
+  community.libvirt.virt_pool:
+    command: define
+    name: "default"
+    xml: '{{ lookup("template", "libvirt_default_pool.j2") }}'
+
+- name: Making default storage pool active
+  community.libvirt.virt_pool:
+    command: start
+    name: "default"
+    state: active
+
+- name: Setting default storage pool to autostart
+  community.libvirt.virt_pool:
+    name: "default"
+    autostart: true
+
+
+# NOTE: Bridge creation will be handled automatically by libvirt network configuration below
+# Libvirt default network is stored on the path /etc/libvirt/qemu/network. network xml files are located here
+- name: Checking if Additional libvirt network configuration is required
+  block:
+    - name: Define custom libvirt network
+      community.libvirt.virt_net:
+        command: define
+        name: "{{ libvirt.network.network_name }}"
+        xml: '{{ lookup("template", "libvirt_network.j2") }}'
+      when: libvirt.network.network_name != 'default'
+
+    - name: Make custom libvirt network autostart
+      community.libvirt.virt_net:
+        name: "{{ libvirt.network.network_name }}"
+        autostart: true
+      when: libvirt.network.network_name != 'default'
+
+    - name: Start custom libvirt network
+      community.libvirt.virt_net:
+        command: start
+        name: "{{ libvirt.network.network_name }}"
+        state: active
+      when: libvirt.network.network_name != 'default'
+  when: libvirt.network is defined and libvirt.network.network_name is defined 
+
+
+
+- name: Checking if Additional libvirt storage pool configuration is required
+  block:
+    - name: Ensure custom storage pool path exists
+      ansible.builtin.file:
+        path: "{{ libvirt.storage.pool_path }}"
+        state: directory
+        mode: '0775'
+        owner: root
+        group: root
+        recurse: true
+      failed_when: "libvirt.storage.pool_path is not defined"
+
+    - name: Define custom libvirt storage pool
+      community.libvirt.virt_pool:
+        command: define
+        name: "{{ libvirt.storage.pool_name }}"
+        xml: '{{ lookup("template", "libvirt_storage_pool.j2") }}'
+      when: libvirt.storage.pool_name != 'default'
+
+    - name: Setting custom libvirt storage pool to autostart
+      community.libvirt.virt_pool:
+        name: "{{ libvirt.storage.pool_name }}"
+        autostart: true
+      when: libvirt.storage.pool_name != 'default'
+
+    - name: Making custom libvirt storage pool active
+      community.libvirt.virt_pool:
+        command: start
+        name: "{{ libvirt.storage.pool_name }}"
+        state: active
+      when: libvirt.storage.pool_name != 'default'
+  when: libvirt.storage is defined and libvirt.storage.pool_name is defined
+
+
+- name: Deleting libvirt network
+  block:
+    - name: Get existing defined networks (Delete)
+      community.libvirt.virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Get network facts (Delete)
+      community.libvirt.virt_net:
+        command: facts
+        name: "{{ network_to_delete }}"
+      register: facts
+      when: network_to_delete in networks.list_nets
+
+    - name: Getting network state (Delete)
+      ansible.builtin.set_fact:
+        state: "{{ facts.ansible_facts.ansible_libvirt_networks[network_to_delete].state }}"
+      when: network_to_delete in networks.list_nets
+
+    - name: Stops the network if active (Delete)
+      community.libvirt.virt_net:
+        command: destroy
+        name: "{{ network_to_delete }}"
+      when: network_to_delete in networks.list_nets and state == "active"
+
+    # Noticed deletion of a network does not cause a state change so a handler cannot not be notified
+    - name: Undefine a network (Delete)
+      community.libvirt.virt_net:
+        command: undefine
+        name: "{{ network_to_delete }}"
+      when: network_to_delete in networks.list_nets
+  tags: never,delete_network
+
+
+- name: Updating libvirt network configuration
+  block:
+    - name: Get existing defined networks
+      community.libvirt.virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Get network facts
+      community.libvirt.virt_net:
+        command: facts
+        name: "{{ network_to_update }}"
+      register: facts
+      when: network_to_update in networks.list_nets
+
+    - name: Getting network state
+      set_fact:
+        state: "{{ facts.ansible_facts.ansible_libvirt_networks[network_to_update].state }}"
+
+    - name: Stops the network if it is active
+      community.libvirt.virt_net:
+        command: destroy
+        name: "{{ network_to_update }}"
+      when: network_to_update in networks.list_nets and state == "active"
+
+    - name: Updating the libvirt network
+      community.libvirt.virt_net:
+        command: modify
+        name: "{{ network_to_update }}"
+        xml: '{{ xml }}'
+      when: network_to_update in networks.list_nets
+
+    - name: Start the libvirt network
+      community.libvirt.virt_net:
+        command: start
+        name: "{{ network_to_update }}"
+        state: active
+      when: network_to_update in networks.list_nets
+      notify:
+        - libvirt_guests_service
+  tags:  never,update_network
+
+
+- name: Creating libvirt network
+  block:
+    - name: Get existing defined networks (Create)
+      community.libvirt.virt_net:
+        command: list_nets
+      register: networks
+
+    - name: Define custom libvirt network (Create)
+      community.libvirt.virt_net:
+        command: define
+        name: "{{ libvirt.network.network_name }}"
+        xml: '{{ lookup("template", "libvirt_network.j2") }}'
+      when: libvirt.network.network_name not in networks.list_nets
+
+    - name: Make custom libvirt network autostart (Create)
+      community.libvirt.virt_net:
+        name: "{{ libvirt.network.network_name }}"
+        autostart: true
+      when: libvirt.network.network_name not in networks.list_nets
+
+    - name: Start custom libvirt network (Create)
+      community.libvirt.virt_net:
+        command: start
+        name: "{{ libvirt.network.network_name }}"
+        state: active
+      when: libvirt.network.network_name not in networks.list_nets
+    
+    - name: Give sometime 5 seconds for the libvirt network to settle down
+      ansible.builtin.pause:
+        seconds: 5
+
+    - name: Restart libvirt guests service
+      ansible.builtin.service:
+        name: libvirt-guests
+        state: restarted
+        
+  when: libvirt.network is defined and libvirt.network.network_name is defined 
+  tags: never,create_network

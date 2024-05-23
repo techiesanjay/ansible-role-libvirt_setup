@@ -1,0 +1,18 @@
+---
+# tasks file for libvirt_infra
+
+# Checks for VM hosts, OS and OS version requirements
+- name: Preflight checks
+  ansible.builtin.import_tasks: preflight_check.yml
+  tags: always
+# NOTE: The above import_task has been tagged as always so that the always tag is applied to all tasks inside the role
+#       Therefore the above task will run in all situations including when the playbook that calls the role is tagged
+
+# Installs libvirt packages basis python version
+- name: Installing libvirt
+  ansible.builtin.import_tasks: install_libvirt.yml
+
+# Manages default and custom network and storage pool creation
+- name: Libvirt network and storage pool configuration
+  ansible.builtin.import_tasks: configure_libvirt.yml
+

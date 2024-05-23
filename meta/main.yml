@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Sanjay Singh
+  description: Ansible role for installing libvirt based virtualization packages
+  license: BSD
+  min_ansible_version: 2.13
+  platforms:
+    - name: EL
+      versions:
+        - 8
+        - 9
+    - name: Fedora
+      versions:
+        - 38
+        - 39
+        - 40
+  galaxy_tags:
+    - hypervisor
+    - kvm
+    - virtualization
+dependencies: []

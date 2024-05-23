@@ -1,0 +1,6 @@
+---
+# handlers file for libvirt_infra
+- name: libvirt_guests_service
+  service:
+    name: libvirt-guests
+    state: restarted
