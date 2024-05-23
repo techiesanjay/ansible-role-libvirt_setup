@@ -1,6 +1,6 @@
 # Ansible role `libvirt_setup`
 
-Ansible role for setting up **libvirt** related packages to work effectively with kvm based virtualization on Linux. This role can be used to **add**, **modify** or **delete** additional libvirt storage pools and libvirt networks if that is required for specific applications that you are deploying.
+Ansible role for setting up **libvirt** related packages to work effectively with kvm based virtualization on Linux. This role can be used to **add**, **modify** or **delete** additional libvirt storage pools and libvirt networks if that is required for specific applications that you are deploying. This role is also available as part of the **techiesanjay.libvirt_infra** content collection on Ansible Galaxy.
 
 ## Requirements
 
@@ -22,11 +22,12 @@ This dictionary is used when a new storage pool is required to hold VMs for a sp
 
 | Variable | Comments |
 |--|--|
-| pool_name | Name of the storage pool to create |
-| pool_path | Points to a folder inside the default storage path i.e. /var/lib/libvirt/images/ocp. The default libvirt storage pool path is /var/lib/libvirt/images |
+| pool_name    | Name of the storage pool to create |
+| pool_path    | Points to a folder inside the default storage path i.e. /var/lib/libvirt/images/ocp. The default libvirt storage pool path is /var/lib/libvirt/images |
 
 ### libvirt.network dictionary variable
 This dictionary is used when a new network is required for VMs for a specific deployment that need to use a specific IP address range that does not interfere with existing applications.
+
 | Variable | Comments|
 | -- | -- |
 | network_name | Name of the libvirt network to create |
@@ -34,7 +35,7 @@ This dictionary is used when a new network is required for VMs for a specific de
 | network_gateway | An ipv4 address to be used as a gateway to access external networks. Example **10.0.0.1** |
 | network_mask | The subnet mask to be used for the network |
 | network_dhcp | Should the network assign a DHCP lease to VMs. Possible values **True** or **False**. If this is set to False then ***network_dhcp_start*** and ***network_dhcp_end*** are not required and will be ignored if set. |
-| network_dhcp_start | An ipv4 address that specifies start range for a DHCP lease for a VM. Example **10.0.0.50**. This specific example case also assumes that you may want to use the range **10.0.0.2** to **10.0.0.49** for setting static IPs for your VMs since these are excluded from the DHCP range. |
+| network_dhcp_start    | An ipv4 address that specifies start range for a DHCP lease for a VM. Example **10.0.0.50**. This specific example case also assumes that you may want to use the range **10.0.0.2** to **10.0.0.49** for setting static IPs for your VMs since these are excluded from the DHCP range. |
 | network_dhcp_end | An ipv4 address that specifies end range for a DHCP lease for a VM. Example **10.0.0.254** |
 
 #### Example. 
